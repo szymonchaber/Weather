@@ -21,3 +21,14 @@ fun <Data, Error> RequestResult<Data, Error>.tapSuccess(onSuccess: (Data) -> Uni
         onSuccess(this.data)
     }
 }
+
+fun <T,Data, Error> RequestResult<Data, Error>.mapSuccess(function: (Data) -> T): RequestResult<T, Error> {
+    return when (this) {
+        is RequestResult.Success -> {
+            RequestResult.success(function(this.data))
+        }
+        is RequestResult.Error -> {
+            RequestResult.error(this.error)
+        }
+    }
+}
