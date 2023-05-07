@@ -52,3 +52,4 @@ View modules (like Home) can then use the domain models directly or map it furth
     - ui module
     - domain module
     - data module
+- Enable socially responsible investments 📈🍁
