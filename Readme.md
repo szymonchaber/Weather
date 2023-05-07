@@ -40,6 +40,7 @@ View modules (like Home) can then use the domain models directly or map it furth
   - Then try fetching the new value and emitting that next
 - Add Firebase crashlytics, analytics etc.
 - Enable Proguard
+- Extract strings
 - Go full MVI - right now there are no user inputs, so we have a half-MVI
 - De-duplicate configuration in modules to make it super easy to create more modules
 - Use Vertical Slice Architecture - Clean Architecture, but for each feature. I didn't really use it, but it would look like this:

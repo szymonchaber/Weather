@@ -60,7 +60,7 @@ fun HomeScreen() {
                 }
 
                 is WeatherLoadingState.Success -> {
-                    ForecastView(forecastState)
+                    ForecastView(forecastState.weather.hourlyForecasts)
                 }
             }
         }
@@ -119,9 +119,9 @@ private fun TeleportationProgress(progress: Float, modifier: Modifier = Modifier
 }
 
 @Composable
-private fun ForecastView(state: WeatherLoadingState.Success) {
+private fun ForecastView(hourlyForecasts: List<HourlyForecast>) {
     LazyColumn(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        items(state.weather.hourlyForecasts) {
+        items(hourlyForecasts) {
             HourlyForecastView(it)
         }
     }
