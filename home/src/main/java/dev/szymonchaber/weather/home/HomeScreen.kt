@@ -1,9 +1,14 @@
 package dev.szymonchaber.weather.home
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -17,11 +22,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import dev.szymonchaber.weather.domain.model.HourlyForecast
 import dev.szymonchaber.weather.home.formatter.MetricValueFormatter
 import dev.szymonchaber.weather.home.formatter.ValueFormatter
-import dev.szymonchaber.weather.home.model.WeatherLoadingState
 import dev.szymonchaber.weather.home.model.HomeState
 import dev.szymonchaber.weather.home.model.HomeViewModel
+import dev.szymonchaber.weather.home.model.WeatherLoadingState
+import kotlinx.datetime.toJavaLocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 val LocalValueFormatter = compositionLocalOf<ValueFormatter> {
     MetricValueFormatter
@@ -37,6 +46,7 @@ fun HomeScreen() {
             .padding(horizontal = 24.dp)
     ) {
         CompositionLocalProvider(LocalValueFormatter provides MetricValueFormatter) {
+            Header(state)
             when (val forecastState = state.weatherState) {
                 WeatherLoadingState.Loading -> {
                     Text(
@@ -53,9 +63,43 @@ fun HomeScreen() {
                     ForecastView(forecastState)
                 }
             }
-            TeleportationProgress(
-                state.teleportationProgress,
-                modifier = Modifier.padding(top = 24.dp)
+        }
+    }
+}
+
+@Composable
+fun Header(state: HomeState) {
+    val formatter = LocalValueFormatter.current
+    Column(Modifier.fillMaxWidth()) {
+        CurrentTemperature(state, formatter)
+        Text(
+            modifier = Modifier.Companion.align(Alignment.CenterHorizontally),
+            text = state.location?.name ?: "You're lost!",
+            style = MaterialTheme.typography.h5
+        )
+        TeleportationProgress(
+            state.teleportationProgress,
+            modifier = Modifier.padding(top = 24.dp, bottom = 16.dp)
+        )
+    }
+}
+
+@Composable
+private fun ColumnScope.CurrentTemperature(
+    state: HomeState,
+    formatter: ValueFormatter
+) {
+    when (val weatherState = state.weatherState) {
+        is WeatherLoadingState.Error -> Unit
+        WeatherLoadingState.Loading -> CircularProgressIndicator()
+        is WeatherLoadingState.Success -> {
+            val temperature = remember(state) {
+                formatter.format(weatherState.weather.currentWeather.temperature)
+            }
+            Text(
+                modifier = Modifier.Companion.align(Alignment.CenterHorizontally),
+                text = temperature,
+                style = MaterialTheme.typography.h3
             )
         }
     }
@@ -68,7 +112,7 @@ private fun TeleportationProgress(progress: Float, modifier: Modifier = Modifier
         LinearProgressIndicator(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 4.dp),
+                .padding(top = 8.dp),
             progress = progress
         )
     }
@@ -76,30 +120,35 @@ private fun TeleportationProgress(progress: Float, modifier: Modifier = Modifier
 
 @Composable
 private fun ForecastView(state: WeatherLoadingState.Success) {
-    val formatter = LocalValueFormatter.current
-    val temperature = remember(state) { formatter.format(state.weather.currentWeather.temperature) }
-    LazyColumn(Modifier.fillMaxWidth()) {
-        item {
-            CurrentWeather(temperature, state)
+    LazyColumn(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        items(state.weather.hourlyForecasts) {
+            HourlyForecastView(it)
         }
     }
 }
 
 @Composable
-private fun CurrentWeather(
-    temperature: String,
-    state: WeatherLoadingState.Success
-) {
-    Column(Modifier.fillMaxWidth()) {
-        Text(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            text = temperature,
-            style = MaterialTheme.typography.h3
-        )
-        Text(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            text = state.location.name,
-            style = MaterialTheme.typography.h5
-        )
+fun HourlyForecastView(hourlyForecast: HourlyForecast) {
+    val formatter = LocalValueFormatter.current
+    val format = remember {
+        DateTimeFormatter.ofPattern("HH:mm", Locale.getDefault())
+    }
+    with(hourlyForecast) {
+        Row(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                modifier = Modifier.weight(1f),
+                text = format.format(time.toJavaLocalDateTime())
+            )
+            Text(
+                modifier = Modifier.weight(1f),
+                text = "🌡️ ${formatter.format(temperature)}"
+            )
+            Text(
+                modifier = Modifier.weight(1f),
+                text = "💧 ${precipitationProbability.probability}%"
+            )
+        }
     }
 }

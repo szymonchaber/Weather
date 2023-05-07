@@ -8,7 +8,7 @@ sealed interface WeatherLoadingState {
 
     object Loading : WeatherLoadingState
 
-    data class Success(val weather: Weather, val location: Location) : WeatherLoadingState
+    data class Success(val weather: Weather) : WeatherLoadingState
 
     data class Error(val weatherError: WeatherError) : WeatherLoadingState
 }

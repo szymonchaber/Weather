@@ -12,10 +12,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapConcat
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -56,12 +54,12 @@ class HomeViewModel @Inject constructor(
 
     private fun fetchData(index: Int): Flow<HomeState> {
         return flow {
-            emit(_state.value.withForecastLoading())
             val currentLocation = coordinateList[index]
+            emit(_state.value.withForecastLoading().withLocation(currentLocation))
             emit(
                 when (val result = getForecastUseCase.getForecast(currentLocation)) {
                     is RequestResult.Success -> {
-                        _state.value.withForecastSuccess(result.data, currentLocation)
+                        _state.value.withForecastSuccess(result.data)
                     }
                     is RequestResult.Error -> {
                         Timber.e(result.error.toString())

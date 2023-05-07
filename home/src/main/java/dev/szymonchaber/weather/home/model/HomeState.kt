@@ -6,11 +6,12 @@ import dev.szymonchaber.weather.domain.model.WeatherError
 
 data class HomeState(
     val weatherState: WeatherLoadingState = WeatherLoadingState.Loading,
-    val teleportationProgress: Float = 0f
+    val teleportationProgress: Float = 0f,
+    val location: Location? = null
 ) {
 
-    fun withForecastSuccess(weather: Weather, location: Location): HomeState {
-        return copy(weatherState = WeatherLoadingState.Success(weather, location))
+    fun withForecastSuccess(weather: Weather): HomeState {
+        return copy(weatherState = WeatherLoadingState.Success(weather))
     }
 
     fun withForecastError(weatherError: WeatherError): HomeState {
@@ -19,6 +20,10 @@ data class HomeState(
 
     fun withForecastLoading() : HomeState {
         return copy(weatherState = WeatherLoadingState.Loading)
+    }
+
+    fun withLocation(location: Location) : HomeState {
+        return copy(location = location)
     }
 
     companion object {
