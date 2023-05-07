@@ -29,7 +29,7 @@ fun HomeScreen() {
         Text(
             text = "Your GPS seems to be malfunctioning, but we will do our best to forecast the weather for you!",
         )
-        CompositionLocalProvider(LocalValueFormatter provides ImperialValueFormatter) {
+        CompositionLocalProvider(LocalValueFormatter provides MetricValueFormatter) {
             when (val forecastState = state.forecastState) {
                 ForecastLoadingState.Loading -> Text("Loading")
                 is ForecastLoadingState.Error -> TODO()
