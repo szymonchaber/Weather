@@ -1,35 +1,31 @@
 import dev.szymonchaber.weather.gradle.Dependencies
 
 plugins {
-    id("com.android.application")
+    id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("kotlin-kapt")
-    id("dagger.hilt.android.plugin")
     id("dependencies")
-    id("com.google.devtools.ksp") version "1.8.20-1.0.10"
+    id("dagger.hilt.android.plugin")
 }
 
 android {
-    namespace = "dev.szymonchaber.weather"
+    namespace = "dev.szymonchaber.weather.domain"
     compileSdk = 33
 
     defaultConfig {
-        applicationId = "dev.szymonchaber.weather"
         minSdk = 24
-        targetSdk = 33
-        versionCode = 1
-        versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary = true
-        }
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     compileOptions {
@@ -39,28 +35,13 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
-    buildFeatures {
-        compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.5"
-    }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
 }
 
 dependencies {
-    implementation(project(":home"))
-    implementation(project(":domain"))
-    implementation(project(":data"))
     Dependencies.common.forEach(::implementation)
     Dependencies.ui.forEach(::implementation)
 
     Dependencies.composeDestinations.forEach(::implementation)
-    ksp(Dependencies.composeDestinationsKsp)
 
     kapt(Dependencies.hiltKapt)
 

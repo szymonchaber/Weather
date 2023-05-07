@@ -15,3 +15,6 @@ dependencyResolutionManagement {
 rootProject.name = "Weather"
 include ':app'
 includeBuild("gradle-plugins")
+include ':home'
+include ':domain'
+include ':data'
