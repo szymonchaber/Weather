@@ -1,7 +1,7 @@
 package dev.szymonchaber.weather.data.api
 
 import dev.szymonchaber.weather.data.api.model.ForecastDto
-import dev.szymonchaber.weather.domain.model.Coordinates
+import dev.szymonchaber.weather.domain.model.Location
 import dev.szymonchaber.weather.domain.model.Forecast
 import dev.szymonchaber.weather.domain.model.ForecastError
 import dev.szymonchaber.weather.domain.model.RequestResult
@@ -16,12 +16,12 @@ internal class ForecastApi @Inject constructor(
     private val httpClient: HttpClient
 ) {
 
-    suspend fun getForecast(coordinates: Coordinates): RequestResult<Forecast, ForecastError> {
+    suspend fun getForecast(location: Location): RequestResult<Forecast, ForecastError> {
         return try {
             val body = httpClient
                 .get("https://api.open-meteo.com/v1/forecast") {
-                    parameter("latitude", coordinates.latitude)
-                    parameter("longitude", coordinates.longitude)
+                    parameter("latitude", location.latitude)
+                    parameter("longitude", location.longitude)
                     parameter("current_weather", true)
                 }
                 .body<ForecastDto>()

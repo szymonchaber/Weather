@@ -3,7 +3,7 @@ package dev.szymonchaber.weather.home.model
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.szymonchaber.weather.domain.model.Coordinates
+import dev.szymonchaber.weather.domain.model.Location
 import dev.szymonchaber.weather.domain.model.RequestResult
 import dev.szymonchaber.weather.domain.usecase.GetForecastUseCase
 import kotlinx.coroutines.currentCoroutineContext
@@ -32,25 +32,32 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            timedIndexFlow(10, 10.seconds)
+            timedIndexFlow(
+                maxIndex = coordinateList.lastIndex,
+                delay = 10.seconds
+            )
                 .flatMapLatest {
                     flow {
                         emit(_state.value.withForecastLoading())
+                        val currentLocation = coordinateList[it]
                         emit(
-                            when (val result =
-                                getForecastUseCase.getForecast(tomorrowCoordinates)) {
-                                is RequestResult.Success -> _state.value.withForecastSuccess(result.data)
-                                is RequestResult.Error -> _state.value.withForecastError(result.error)
+                            when (val result = getForecastUseCase.getForecast(currentLocation)) {
+                                is RequestResult.Success -> {
+                                    _state.value.withForecastSuccess(result.data, currentLocation)
+                                }
+
+                                is RequestResult.Error -> {
+                                    _state.value.withForecastError(result.error)
+                                }
                             }
                         )
                     }
                 }
                 .onEach {
-                    when(val state = it.forecastState) {
+                    when (val state = it.forecastState) {
                         is ForecastLoadingState.Error -> Timber.e(state.forecastError.toString())
                         else -> Unit
                     }
-                    Timber.d("An error occured")
                 }
                 .collectLatest {
                     _state.tryEmit(it)
@@ -71,6 +78,17 @@ class HomeViewModel @Inject constructor(
 
     companion object {
 
-        private val tomorrowCoordinates = Coordinates(53.558467, 9.965157)
+        private val coordinateList = listOf(
+            Location(latitude = 53.619653, longitude = 10.079969, name = "Lübeck"),
+            Location(latitude = 53.080917, longitude = 8.847533, name = "Bremen"),
+            Location(latitude = 52.378385, longitude = 9.794862, name = "Hanover"),
+            Location(latitude = 52.496385, longitude = 13.444041, name = "Berlin"),
+            Location(latitude = 53.866865, longitude = 10.739542, name = "Kiel"),
+            Location(latitude = 54.304540, longitude = 10.152741, name = "Lübeck but different"),
+            Location(latitude = 54.797277, longitude = 9.491039, name = "Flensburg"),
+            Location(latitude = 52.426412, longitude = 10.821392, name = "Wolfsburg"),
+            Location(latitude = 53.542788, longitude = 8.613462, name = "Bremerhaven"),
+            Location(latitude = 53.141598, longitude = 8.242565, name = "Oldenburg"),
+        )
     }
 }

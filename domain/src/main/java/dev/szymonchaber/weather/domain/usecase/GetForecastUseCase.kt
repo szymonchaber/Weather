@@ -1,6 +1,6 @@
 package dev.szymonchaber.weather.domain.usecase
 
-import dev.szymonchaber.weather.domain.model.Coordinates
+import dev.szymonchaber.weather.domain.model.Location
 import dev.szymonchaber.weather.domain.model.Forecast
 import dev.szymonchaber.weather.domain.model.ForecastError
 import dev.szymonchaber.weather.domain.model.RequestResult
@@ -11,7 +11,7 @@ class GetForecastUseCase @Inject constructor(
     private val repository: ForecastRepository
 ) {
 
-    suspend fun getForecast(coordinates: Coordinates): RequestResult<Forecast, ForecastError> {
-        return repository.getForecast(coordinates)
+    suspend fun getForecast(location: Location): RequestResult<Forecast, ForecastError> {
+        return repository.getForecast(location)
     }
 }
