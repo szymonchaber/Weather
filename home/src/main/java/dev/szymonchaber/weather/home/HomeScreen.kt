@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import dev.szymonchaber.weather.home.formatter.MetricValueFormatter
 import dev.szymonchaber.weather.home.formatter.ValueFormatter
-import dev.szymonchaber.weather.home.model.ForecastLoadingState
+import dev.szymonchaber.weather.home.model.WeatherLoadingState
 import dev.szymonchaber.weather.home.model.HomeState
 import dev.szymonchaber.weather.home.model.HomeViewModel
 
@@ -37,19 +37,19 @@ fun HomeScreen() {
             .padding(horizontal = 24.dp)
     ) {
         CompositionLocalProvider(LocalValueFormatter provides MetricValueFormatter) {
-            when (val forecastState = state.forecastState) {
-                ForecastLoadingState.Loading -> {
+            when (val forecastState = state.weatherState) {
+                WeatherLoadingState.Loading -> {
                     Text(
                         modifier = Modifier.align(Alignment.CenterHorizontally),
                         text = "Loading"
                     )
                 }
 
-                is ForecastLoadingState.Error -> {
+                is WeatherLoadingState.Error -> {
                     Text(text = "An error occured")
                 }
 
-                is ForecastLoadingState.Success -> {
+                is WeatherLoadingState.Success -> {
                     ForecastView(forecastState)
                 }
             }
@@ -75,9 +75,9 @@ private fun TeleportationProgress(progress: Float, modifier: Modifier = Modifier
 }
 
 @Composable
-private fun ForecastView(state: ForecastLoadingState.Success) {
+private fun ForecastView(state: WeatherLoadingState.Success) {
     val formatter = LocalValueFormatter.current
-    val temperature = remember(state) { formatter.format(state.forecast.temperature) }
+    val temperature = remember(state) { formatter.format(state.weather.currentWeather.temperature) }
     LazyColumn(Modifier.fillMaxWidth()) {
         item {
             CurrentWeather(temperature, state)
@@ -88,7 +88,7 @@ private fun ForecastView(state: ForecastLoadingState.Success) {
 @Composable
 private fun CurrentWeather(
     temperature: String,
-    state: ForecastLoadingState.Success
+    state: WeatherLoadingState.Success
 ) {
     Column(Modifier.fillMaxWidth()) {
         Text(

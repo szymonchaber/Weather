@@ -48,12 +48,6 @@ class HomeViewModel @Inject constructor(
                         }
                     }
                 }
-                .onEach {
-                    when (val state = it.forecastState) {
-                        is ForecastLoadingState.Error -> Timber.e(state.forecastError.toString())
-                        else -> Unit
-                    }
-                }
                 .collectLatest {
                     _state.tryEmit(it)
                 }
@@ -70,6 +64,7 @@ class HomeViewModel @Inject constructor(
                         _state.value.withForecastSuccess(result.data, currentLocation)
                     }
                     is RequestResult.Error -> {
+                        Timber.e(result.error.toString())
                         _state.value.withForecastError(result.error)
                     }
                 }

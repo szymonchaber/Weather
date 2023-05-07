@@ -1,24 +1,24 @@
 package dev.szymonchaber.weather.home.model
 
 import dev.szymonchaber.weather.domain.model.Location
-import dev.szymonchaber.weather.domain.model.Forecast
-import dev.szymonchaber.weather.domain.model.ForecastError
+import dev.szymonchaber.weather.domain.model.Weather
+import dev.szymonchaber.weather.domain.model.WeatherError
 
 data class HomeState(
-    val forecastState: ForecastLoadingState = ForecastLoadingState.Loading,
+    val weatherState: WeatherLoadingState = WeatherLoadingState.Loading,
     val teleportationProgress: Float = 0f
 ) {
 
-    fun withForecastSuccess(forecast: Forecast, location: Location): HomeState {
-        return copy(forecastState = ForecastLoadingState.Success(forecast, location))
+    fun withForecastSuccess(weather: Weather, location: Location): HomeState {
+        return copy(weatherState = WeatherLoadingState.Success(weather, location))
     }
 
-    fun withForecastError(forecastError: ForecastError): HomeState {
-        return copy(forecastState = ForecastLoadingState.Error(forecastError))
+    fun withForecastError(weatherError: WeatherError): HomeState {
+        return copy(weatherState = WeatherLoadingState.Error(weatherError))
     }
 
     fun withForecastLoading() : HomeState {
-        return copy(forecastState = ForecastLoadingState.Loading)
+        return copy(weatherState = WeatherLoadingState.Loading)
     }
 
     companion object {
