@@ -1,4 +1,6 @@
 import dev.szymonchaber.weather.gradle.Dependencies
+import org.jetbrains.kotlin.builtins.StandardNames.FqNames.target
+import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 
 plugins {
     id("com.android.library")
@@ -35,6 +37,17 @@ android {
     }
     kotlinOptions {
         jvmTarget = "17"
+    }
+    buildFeatures {
+        compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.4.5"
+    }
+    libraryVariants.forEach { variant ->
+        sourceSets.create(variant.name) {
+            kotlin.srcDir("build/generated/ksp/${variant.name}/kotlin")
+        }
     }
 }
 
