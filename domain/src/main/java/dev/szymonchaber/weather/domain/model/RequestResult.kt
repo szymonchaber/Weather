@@ -11,5 +11,8 @@ sealed class RequestResult<Data, Error> {
         fun <Data, Error> success(data: Data) : RequestResult<Data, Error> {
             return Success(data)
         }
+        fun <Data, Error> error(error: Error) : RequestResult<Data, Error> {
+            return Error(error)
+        }
     }
 }

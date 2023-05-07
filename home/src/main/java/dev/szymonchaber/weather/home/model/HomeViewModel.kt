@@ -13,8 +13,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -30,7 +32,7 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            timedIndexFlow(10, 1.seconds)
+            timedIndexFlow(10, 10.seconds)
                 .flatMapLatest {
                     flow {
                         emit(_state.value.withForecastLoading())
@@ -42,6 +44,13 @@ class HomeViewModel @Inject constructor(
                             }
                         )
                     }
+                }
+                .onEach {
+                    when(val state = it.forecastState) {
+                        is ForecastLoadingState.Error -> Timber.e(state.forecastError.toString())
+                        else -> Unit
+                    }
+                    Timber.d("An error occured")
                 }
                 .collectLatest {
                     _state.tryEmit(it)

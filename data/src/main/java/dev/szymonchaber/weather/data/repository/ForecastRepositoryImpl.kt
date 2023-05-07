@@ -1,5 +1,6 @@
 package dev.szymonchaber.weather.data.repository
 
+import dev.szymonchaber.weather.data.api.ForecastApi
 import dev.szymonchaber.weather.domain.model.Coordinates
 import dev.szymonchaber.weather.domain.model.Forecast
 import dev.szymonchaber.weather.domain.model.ForecastError
@@ -12,13 +13,11 @@ import javax.inject.Singleton
 import kotlin.random.Random
 
 @Singleton
-internal class ForecastRepositoryImpl @Inject constructor() : ForecastRepository {
+internal class ForecastRepositoryImpl @Inject constructor(
+    private val forecastApi: ForecastApi
+) : ForecastRepository {
 
     override suspend fun getForecast(coordinates: Coordinates): RequestResult<Forecast, ForecastError> {
-        delay(200)
-        val celsius = Random.nextInt(from = -60, until = 40).toDouble()
-        return RequestResult.success(
-            Forecast(Temperature(celsius))
-        )
+        return forecastApi.getForecast(coordinates)
     }
 }

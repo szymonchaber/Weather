@@ -32,7 +32,7 @@ fun HomeScreen() {
         CompositionLocalProvider(LocalValueFormatter provides MetricValueFormatter) {
             when (val forecastState = state.forecastState) {
                 ForecastLoadingState.Loading -> Text("Loading")
-                is ForecastLoadingState.Error -> TODO()
+                is ForecastLoadingState.Error -> Text(text = "An error occured")
                 is ForecastLoadingState.Success -> ForecastView(forecastState.forecast)
             }
         }
