@@ -1,6 +1,10 @@
 package dev.szymonchaber.weather.home
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -8,9 +12,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import dev.szymonchaber.weather.domain.model.Forecast
-import dev.szymonchaber.weather.home.formatter.ImperialValueFormatter
 import dev.szymonchaber.weather.home.formatter.MetricValueFormatter
 import dev.szymonchaber.weather.home.formatter.ValueFormatter
 import dev.szymonchaber.weather.home.model.ForecastLoadingState
@@ -25,23 +30,52 @@ val LocalValueFormatter = compositionLocalOf<ValueFormatter> {
 fun HomeScreen() {
     val viewModel = hiltViewModel<HomeViewModel>()
     val state by viewModel.state.collectAsState(initial = HomeState.initial)
-    Column {
-        Text(
-            text = "Your GPS seems to be malfunctioning, but we will do our best to forecast the weather for you!",
-        )
+    Column(Modifier.padding(top = 48.dp)) {
         CompositionLocalProvider(LocalValueFormatter provides MetricValueFormatter) {
             when (val forecastState = state.forecastState) {
-                ForecastLoadingState.Loading -> Text("Loading")
-                is ForecastLoadingState.Error -> Text(text = "An error occured")
-                is ForecastLoadingState.Success -> ForecastView(forecastState.forecast)
+                ForecastLoadingState.Loading -> {
+                    Text(
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        text = "Loading"
+                    )
+                }
+                is ForecastLoadingState.Error -> {
+                    Text(text = "An error occured")
+                }
+                is ForecastLoadingState.Success -> {
+                    ForecastView(forecastState)
+                }
             }
         }
     }
 }
 
 @Composable
-private fun ForecastView(forecast: Forecast) {
+private fun ForecastView(state: ForecastLoadingState.Success) {
     val formatter = LocalValueFormatter.current
-    val temperature = remember(forecast) { formatter.format(forecast.temperature) }
-    Text("Temperature: $temperature")
+    val temperature = remember(state) { formatter.format(state.forecast.temperature) }
+    LazyColumn(Modifier.fillMaxWidth()) {
+        item {
+            CurrentWeather(temperature, state)
+        }
+    }
+}
+
+@Composable
+private fun CurrentWeather(
+    temperature: String,
+    state: ForecastLoadingState.Success
+) {
+    Column(Modifier.fillMaxWidth()) {
+        Text(
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            text = temperature,
+            style = MaterialTheme.typography.h3
+        )
+        Text(
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            text = state.location.name,
+            style = MaterialTheme.typography.h5
+        )
+    }
 }
