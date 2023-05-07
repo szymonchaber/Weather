@@ -131,7 +131,7 @@ private fun ForecastView(state: WeatherLoadingState.Success) {
 fun HourlyForecastView(hourlyForecast: HourlyForecast) {
     val formatter = LocalValueFormatter.current
     val format = remember {
-        DateTimeFormatter.ofPattern("HH:mm", Locale.getDefault())
+        DateTimeFormatter.ofPattern("HH:mm, MMM d", Locale.getDefault())
     }
     with(hourlyForecast) {
         Row(
