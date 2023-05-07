@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -30,7 +31,11 @@ val LocalValueFormatter = compositionLocalOf<ValueFormatter> {
 fun HomeScreen() {
     val viewModel = hiltViewModel<HomeViewModel>()
     val state by viewModel.state.collectAsState(initial = HomeState.initial)
-    Column(Modifier.padding(top = 48.dp)) {
+    Column(
+        Modifier
+            .padding(top = 48.dp)
+            .padding(horizontal = 24.dp)
+    ) {
         CompositionLocalProvider(LocalValueFormatter provides MetricValueFormatter) {
             when (val forecastState = state.forecastState) {
                 ForecastLoadingState.Loading -> {
@@ -39,14 +44,33 @@ fun HomeScreen() {
                         text = "Loading"
                     )
                 }
+
                 is ForecastLoadingState.Error -> {
                     Text(text = "An error occured")
                 }
+
                 is ForecastLoadingState.Success -> {
                     ForecastView(forecastState)
                 }
             }
+            TeleportationProgress(
+                state.teleportationProgress,
+                modifier = Modifier.padding(top = 24.dp)
+            )
         }
+    }
+}
+
+@Composable
+private fun TeleportationProgress(progress: Float, modifier: Modifier = Modifier) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        Text(text = "Teleportation in progress")
+        LinearProgressIndicator(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp),
+            progress = progress
+        )
     }
 }
 

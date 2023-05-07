@@ -5,7 +5,8 @@ import dev.szymonchaber.weather.domain.model.Forecast
 import dev.szymonchaber.weather.domain.model.ForecastError
 
 data class HomeState(
-    val forecastState: ForecastLoadingState = ForecastLoadingState.Loading
+    val forecastState: ForecastLoadingState = ForecastLoadingState.Loading,
+    val teleportationProgress: Float = 0f
 ) {
 
     fun withForecastSuccess(forecast: Forecast, location: Location): HomeState {

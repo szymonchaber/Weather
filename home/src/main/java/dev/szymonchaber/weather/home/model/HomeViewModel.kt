@@ -11,8 +11,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -36,21 +38,14 @@ class HomeViewModel @Inject constructor(
                 maxIndex = coordinateList.lastIndex,
                 delay = 10.seconds
             )
-                .flatMapLatest {
-                    flow {
-                        emit(_state.value.withForecastLoading())
-                        val currentLocation = coordinateList[it]
-                        emit(
-                            when (val result = getForecastUseCase.getForecast(currentLocation)) {
-                                is RequestResult.Success -> {
-                                    _state.value.withForecastSuccess(result.data, currentLocation)
-                                }
-
-                                is RequestResult.Error -> {
-                                    _state.value.withForecastError(result.error)
-                                }
-                            }
-                        )
+                .flatMapConcat {
+                    when (it) {
+                        is IndexTimerOutput.NextIndex -> {
+                            fetchData(it.index)
+                        }
+                        is IndexTimerOutput.TimerProgressUpdate -> {
+                            flowOf(_state.value.copy(teleportationProgress = it.progress))
+                        }
                     }
                 }
                 .onEach {
@@ -65,13 +60,37 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun timedIndexFlow(maxIndex: Int, delay: Duration): Flow<Int> {
+    private fun fetchData(index: Int): Flow<HomeState> {
         return flow {
-            var counter = 0
+            emit(_state.value.withForecastLoading())
+            val currentLocation = coordinateList[index]
+            emit(
+                when (val result = getForecastUseCase.getForecast(currentLocation)) {
+                    is RequestResult.Success -> {
+                        _state.value.withForecastSuccess(result.data, currentLocation)
+                    }
+                    is RequestResult.Error -> {
+                        _state.value.withForecastError(result.error)
+                    }
+                }
+            )
+        }
+    }
+
+    private fun timedIndexFlow(maxIndex: Int, delay: Duration): Flow<IndexTimerOutput> {
+        return flow {
+            var index = 0
+            var timerMilliseconds = 0
+            emit(IndexTimerOutput.NextIndex(index))
             while (currentCoroutineContext().isActive) {
-                counter = (counter + 1) % maxIndex
-                emit(counter)
-                delay(delay)
+                if (timerMilliseconds >= delay.inWholeMilliseconds) {
+                    index = (index + 1) % maxIndex
+                    emit(IndexTimerOutput.NextIndex(index))
+                    timerMilliseconds = 0
+                }
+                delay(20)
+                timerMilliseconds += 20
+                emit(IndexTimerOutput.TimerProgressUpdate(timerMilliseconds / delay.inWholeMilliseconds.toFloat()))
             }
         }
     }
@@ -91,4 +110,10 @@ class HomeViewModel @Inject constructor(
             Location(latitude = 53.141598, longitude = 8.242565, name = "Oldenburg"),
         )
     }
+}
+
+sealed interface IndexTimerOutput {
+
+    data class NextIndex(val index: Int) : IndexTimerOutput
+    data class TimerProgressUpdate(val progress: Float) : IndexTimerOutput
 }
