@@ -16,3 +16,8 @@ sealed class RequestResult<Data, Error> {
         }
     }
 }
+fun <Data, Error> RequestResult<Data, Error>.tapSuccess(onSuccess: (Data) -> Unit) {
+    if (this is RequestResult.Success) {
+        onSuccess(this.data)
+    }
+}
